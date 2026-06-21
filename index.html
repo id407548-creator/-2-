@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeamUp</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f4f6fb;margin:0}
+.container{max-width:900px;margin:auto;padding:20px}
+.card{background:#fff;padding:20px;border-radius:15px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+input,select{width:100%;padding:10px;margin:8px 0}
+button{background:#2563eb;color:#fff;border:none;padding:10px 15px;border-radius:8px;cursor:pointer}
+.delete{background:#ef4444}
+.hidden{display:none}
+.item{background:#eef3ff;padding:15px;border-radius:10px;margin-top:10px}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<div id="loginPage" class="card">
+<h1>TeamUp</h1>
+<input id="nameInput" placeholder="이름">
+<input id="studentInput" placeholder="학번">
+<button onclick="login()">시작하기</button>
+</div>
+
+<div id="dashboard" class="hidden">
+
+<div class="card">
+<h2 id="welcome"></h2>
+<button onclick="logout()">로그아웃</button>
+</div>
+
+<div class="card">
+<h2>팀 생성</h2>
+<input id="teamName" placeholder="팀 이름">
+<button onclick="createTeam()">팀 생성</button>
+<div id="teamList"></div>
+</div>
+
+<div class="card">
+<h2>Task 추가</h2>
+<input id="taskTitle" placeholder="역할 제목">
+<input id="taskOwner" placeholder="담당자">
+<input type="date" id="taskDate">
+<select id="taskStatus">
+<option>진행 전</option>
+<option>진행 중</option>
+<option>완료</option>
+</select>
+<button onclick="createTask()">Task 추가</button>
+<div id="taskList"></div>
+</div>
+
+</div>
+</div>
+
+<script>
+let teams = JSON.parse(localStorage.getItem("teams")) || [];
+let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+
+function login(){
+ localStorage.setItem("userName",nameInput.value);
+ localStorage.setItem("studentId",studentInput.value);
+ showDashboard();
+}
+
+function logout(){
+ localStorage.removeItem("userName");
+ localStorage.removeItem("studentId");
+ location.reload();
+}
+
+function showDashboard(){
+ loginPage.classList.add("hidden");
+ dashboard.classList.remove("hidden");
+ welcome.innerText = localStorage.getItem("userName")+"님 환영합니다.";
+ renderTeams();
+ renderTasks();
+}
+
+function createTeam(){
+ teams.push({name:teamName.value});
+ localStorage.setItem("teams",JSON.stringify(teams));
+ teamName.value="";
+ renderTeams();
+}
+
+function renderTeams(){
+ teamList.innerHTML="";
+ teams.forEach((t,i)=>{
+ teamList.innerHTML += `<div class="item">${t.name}
+ <button class='delete' onclick='deleteTeam(${i})'>삭제</button></div>`;
+ });
+}
+
+function deleteTeam(i){
+ teams.splice(i,1);
+ localStorage.setItem("teams",JSON.stringify(teams));
+ renderTeams();
+}
+
+function createTask(){
+ tasks.push({
+ title:taskTitle.value,
+ owner:taskOwner.value,
+ date:taskDate.value,
+ status:taskStatus.value
+ });
+ localStorage.setItem("tasks",JSON.stringify(tasks));
+ renderTasks();
+}
+
+function renderTasks(){
+ taskList.innerHTML="";
+ tasks.forEach((t,i)=>{
+ taskList.innerHTML += `<div class='item'>
+ <b>${t.title}</b><br>
+ 담당자: ${t.owner}<br>
+ 마감일: ${t.date}<br>
+ 상태: ${t.status}<br>
+ <button class='delete' onclick='deleteTask(${i})'>삭제</button>
+ </div>`;
+ });
+}
+
+function deleteTask(i){
+ tasks.splice(i,1);
+ localStorage.setItem("tasks",JSON.stringify(tasks));
+ renderTasks();
+}
+
+window.onload=()=>{
+ if(localStorage.getItem("userName")) showDashboard();
+}
+</script>
+</body>
+</html>
